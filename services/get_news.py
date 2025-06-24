@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-"""Service for retrieving articles from the last 24 hours from MongoDB."""
+"""Service for retrieving today's news articles from MongoDB."""
 
 from typing import List, Dict
 
@@ -10,5 +10,5 @@ from clients.mongodb import get_articles_today
 
 
 def fetch_today_articles() -> List[Dict[str, str]]:
-    """Return articles from the last 24 hours (title & summary) from MongoDB."""
+    """Return today's articles (title & summary) from MongoDB."""
     return get_articles_today()

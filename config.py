@@ -9,14 +9,16 @@ no secrets are hard-coded into the repository.
 import os
 from dataclasses import dataclass
 from datetime import timezone
+from dotenv import load_dotenv
 
+load_dotenv()
 
 @dataclass(frozen=True)
 class Settings:
     """Runtime settings loaded from the environment."""
 
     # MongoDB
-    mongodb_uri: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
+    mongodb_uri: str = os.getenv("MONGODB_URI")
     mongodb_db: str = os.getenv("MONGODB_DB", "events")
     mongodb_collection: str = os.getenv("MONGODB_COLLECTION", "articles")
 
@@ -28,9 +30,6 @@ class Settings:
     # Speech generation options
     voice: str = os.getenv("ANCHOR_VOICE", "alloy")
     audio_format: str = os.getenv("AUDIO_FORMAT", "mp3")
-
-    # Misc
-    timezone: timezone = timezone.utc
 
 
 settings = Settings()

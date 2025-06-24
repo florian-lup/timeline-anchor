@@ -36,9 +36,8 @@ def chat_completion(messages: List[Dict[str, str]], max_tokens: int = 2000) -> s
         model=settings.chat_model,
         messages=messages,
         max_tokens=max_tokens,
-        temperature=0.7,
+        temperature=0.5,
     )
-    # According to the OpenAI client, response.choices[0].message.content holds the text.
     return response.choices[0].message.content.strip()
 
 
@@ -63,7 +62,7 @@ def generate_speech(
         model=settings.tts_model,
         voice=voice,
         input=text,
-        format=settings.audio_format,
+        response_format=settings.audio_format,
     )
 
     output_path = Path(output_path)
