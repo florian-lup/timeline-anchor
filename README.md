@@ -1,49 +1,53 @@
-# AI News Anchor
+# Timeline Anchor 🎙️
 
-This project automatically turns the day's news articles from your MongoDB database into a spoken news bulletin.
+An AI-powered broadcasting system that fetches recent news articles, generates professional scripts, and converts them to speech.
+
+- Fetches news articles from the last 24 hours stored in MongoDB
+- Uses AI to analyze and craft engaging news scripts from multiple articles
+- Generates professional-quality text-to-speech audio for broadcast.
 
 ## Features
 
-1. **MongoDB integration** – Reads today's `title` and `summary` fields from the `events.articles` collection.
-2. **Script writing** – Uses OpenAI GPT-4o-mini to craft a broadcast-ready script.
-3. **Text-to-speech** – Converts the script into speech with the **gpt-4o-mini-tts** model and saves an MP3.
+### 🔍 **Intelligent News Aggregation**
 
-## Project layout
+- Automatically retrieves news articles from the last 24 hours
+- Filters and processes article titles and summaries from MongoDB database
+- Smart article selection for optimal news coverage
 
-```
-clients/        # External service wrappers (MongoDB, OpenAI)
-services/       # Domain logic (fetch news, write script, generate speech)
-main.py         # End-to-end pipeline entrypoint
-config.py       # Environment-driven configuration
-```
+### 📝 **AI-Powered Script Generation**
 
-## Quick start
+- Uses OpenAI's GPT models to analyze and synthesize news content
+- Selects the three most impactful stories from available articles
+- Generates professional, broadcast-ready scripts with:
+  - Engaging analytical commentary
+  - Contextual analysis and implications
+  - Smooth conversational transitions
+  - Natural breathing pauses
+  - Professional opening and closing segments
 
-1. Install dependencies (create a virtual environment first if desired):
+### 🎵 **High-Quality Text-to-Speech**
 
-```bash
-pip install -r requirements.txt
-```
+- Converts scripts to professional audio using OpenAI's TTS technology
+- Customizable voice options (default: "alloy")
+- Generates MP3 audio files ready for broadcast
+- Optimized for natural speech patterns and pacing
 
-2. Set the required environment variables:
+## Technologies Used
 
-```bash
-export OPENAI_API_KEY="sk-…"
-export MONGODB_URI="mongodb://localhost:27017"   # or your Atlas URI
-```
+### **Core Technologies**
 
-Optional overrides:
+- **Python 3.x** - Main programming language
+- **MongoDB** - Database for storing and retrieving news articles
+- **OpenAI API** - AI model integration for script generation and TTS
 
-```bash
-export CHAT_MODEL="gpt-4o-mini"
-export TTS_MODEL="gpt-4o-mini-tts"
-export ANCHOR_VOICE="alloy"          # voice name supported by the TTS model
-```
+### **AI Models**
 
-3. Run the pipeline:
+- **GPT-4.1-mini** - Default chat model for script generation (configurable)
+- **TTS (Text-to-Speech)** - OpenAI's speech synthesis for audio generation
+- **Voice: Alloy** - Default voice option (customizable)
 
-```bash
-python main.py
-```
+### **Architecture**
 
-The script will be saved to `anchor_script.txt` and the audio to `news_anchor.mp3`.
+- **Modular Design** - Separated services for news retrieval, script writing, and speech generation
+- **Configuration Management** - Centralized settings with environment variable support
+- **Client Abstraction** - Dedicated clients for MongoDB and OpenAI integrations
