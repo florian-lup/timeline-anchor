@@ -27,7 +27,7 @@ def _get_client() -> OpenAI:
     return _client
 
 
-def chat_completion(messages: List[Dict[str, str]], max_tokens: int = 2000) -> str:
+def chat_completion(messages: List[Dict[str, str]]) -> str:
     """Return the assistant's response text using the configured chat model."""
 
     client = _get_client()
@@ -35,8 +35,8 @@ def chat_completion(messages: List[Dict[str, str]], max_tokens: int = 2000) -> s
     response = client.chat.completions.create(
         model=settings.chat_model,
         messages=messages,
-        max_tokens=max_tokens,
-        temperature=0.5,
+        max_tokens=settings.chat_max_tokens,
+        temperature=settings.chat_temperature,
     )
     return response.choices[0].message.content.strip()
 

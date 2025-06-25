@@ -7,7 +7,7 @@ from pathlib import Path
 
 from services.get_news import fetch_today_articles
 from services.write_script import create_anchor_script
-from services.generate_speach import generate_anchor_audio
+from services.generate_speech import generate_anchor_audio
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

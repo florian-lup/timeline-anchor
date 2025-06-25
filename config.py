@@ -25,11 +25,15 @@ class Settings:
     # OpenAI
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
     chat_model: str = os.getenv("CHAT_MODEL", "gpt-4o-mini")
+    chat_max_tokens: int = int(os.getenv("CHAT_MAX_TOKENS", 1000))
+    chat_temperature: float = float(os.getenv("CHAT_TEMPERATURE", 0.5))
     tts_model: str = os.getenv("TTS_MODEL", "gpt-4o-mini-tts")
 
     # Speech generation options
     voice: str = os.getenv("ANCHOR_VOICE", "alloy")
     audio_format: str = os.getenv("AUDIO_FORMAT", "mp3")
 
+    # General
+    timezone: timezone = timezone.utc
 
 settings = Settings()

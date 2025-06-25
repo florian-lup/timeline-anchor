@@ -5,7 +5,7 @@ This project automatically turns the day's news articles from your MongoDB datab
 ## Features
 
 1. **MongoDB integration** – Reads today's `title` and `summary` fields from the `events.articles` collection.
-2. **Script writing** – Uses OpenAI GPT-4o-mini to craft a broadcast-ready script (≤ 2000 tokens).
+2. **Script writing** – Uses OpenAI GPT-4o-mini to craft a broadcast-ready script.
 3. **Text-to-speech** – Converts the script into speech with the **gpt-4o-mini-tts** model and saves an MP3.
 
 ## Project layout
