@@ -26,6 +26,11 @@ def main() -> None:
     artefacts_dir = Path("artefacts")
     artefacts_dir.mkdir(exist_ok=True)
 
+    # Clear old artefacts before generating new ones
+    if artefacts_dir.exists():
+        for file in artefacts_dir.glob("*"):
+            file.unlink()
+
     logger.info("Generating anchor script …")
     script = create_anchor_script(articles)
 
