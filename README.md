@@ -47,8 +47,3 @@ python main.py
 ```
 
 The script will be saved to `anchor_script.txt` and the audio to `news_anchor.mp3`.
-
-## Notes
-
-- The MongoDB documents are expected to contain a `date` field with timezone-aware UTC `datetime` values. Adjust the query in `clients/mongodb.py` if your schema differs.
-- Token usage depends on article length; if you routinely exceed the 2000-token limit, filter or summarise input before calling the model.

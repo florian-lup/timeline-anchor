@@ -11,7 +11,7 @@ from clients.openai import chat_completion
 from config import settings
 
 PROMPT_TEMPLATE = """
-Using the list of news provided below, select the three most impactful stories (if more than three are provided) and craft a concise, engaging analytical commentary suitable for a text-to-speech engine to read aloud.
+Using the list of news provided below, select the three most impactful stories and craft a concise, engaging analytical commentary suitable for a text-to-speech engine to read aloud.
 
 Open with a time-neutral greeting and a brief introduction to the news.
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from services.get_news import fetch_today_articles
+from services.get_news import fetch_last_24_hours_articles
 from services.write_script import create_anchor_script
 from services.generate_speech import generate_anchor_audio
 
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    logger.info("Fetching today's news articles …")
-    articles = fetch_today_articles()
+    logger.info("Fetching news articles from the last 24 hours …")
+    articles = fetch_last_24_hours_articles()
     logger.info("Found %d articles", len(articles))
 
     if not articles:
-        logger.warning("No articles found for today. Aborting.")
+        logger.warning("No articles found for the last 24 hours. Aborting.")
         return
 
     # Create artefacts directory if it doesn't exist

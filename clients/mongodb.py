@@ -22,25 +22,24 @@ def _get_client() -> Iterator[MongoClient]:
         client.close()
 
 
-def get_articles_today() -> List[Dict[str, str]]:
-    """Return today's articles using the ObjectId-embedded timestamp.
+def get_articles_last_24_hours() -> List[Dict[str, str]]:
+    """Return articles from the last 24 hours using the ObjectId-embedded timestamp.
 
     MongoDB's default ObjectId contains the document's creation time in its
-    first 4 bytes. By generating start/end ObjectIds for the UTC boundaries of
-    today, we can retrieve all documents inserted today without relying on a
+    first 4 bytes. By generating start/end ObjectIds for the last 24 hours,
+    we can retrieve all documents inserted in that timeframe without relying on a
     separate ``date`` field. This keeps the query simple and index-friendly.
     """
 
-    start_of_day = datetime.now(tz=settings.timezone).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    end_of_day = start_of_day + timedelta(days=1)
+    now = datetime.now(tz=settings.timezone)
+    start_time = now - timedelta(hours=24)
+    end_time = now
 
     with _get_client() as client:
         collection = client[settings.mongodb_db][settings.mongodb_collection]
 
-        start_oid = ObjectId.from_datetime(start_of_day)
-        end_oid = ObjectId.from_datetime(end_of_day)
+        start_oid = ObjectId.from_datetime(start_time)
+        end_oid = ObjectId.from_datetime(end_time)
 
         cursor = collection.find(
             {"_id": {"$gte": start_oid, "$lt": end_oid}},
