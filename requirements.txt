@@ -1,3 +1,5 @@
 python-dotenv
 openai
 pymongo
+fastapi
+uvicorn[standard]

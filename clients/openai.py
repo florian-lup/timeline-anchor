@@ -70,3 +70,35 @@ def generate_speech(
 
     logger.info("Audio saved to %s", output_path)
     return output_path
+
+
+def generate_speech_bytes(
+    text: str,
+    *,
+    voice: str | None = None,
+) -> bytes:
+    """Generate TTS audio from ``text`` and return as raw bytes.
+
+    This avoids touching the filesystem and is suitable for streaming directly
+    to clients.
+    """
+
+    client = _get_client()
+
+    voice = voice or settings.voice
+
+    logger.info("Generating TTS audio (bytes) using model %s", settings.tts_model)
+
+    response = client.audio.speech.create(
+        model=settings.tts_model,
+        voice=voice,
+        input=text,
+        response_format=settings.audio_format,
+    )
+
+    # The response object supports ``iter_bytes`` for streaming.
+    audio_chunks = []
+    for chunk in response.iter_bytes():  # type: ignore[attr-defined]
+        audio_chunks.append(chunk)
+
+    return b"".join(audio_chunks)
