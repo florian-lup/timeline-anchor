@@ -65,7 +65,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 def _run_pipeline(task_id: str) -> bytes:
-    """Run the news-anchor pipeline and return MP3 bytes."""
+    """Run the news-anchor pipeline and return Opus bytes."""
 
     logger.info("[%s] Fetching articles …", task_id)
     articles = fetch_last_24_hours_articles()
@@ -83,7 +83,7 @@ def _run_pipeline(task_id: str) -> bytes:
 
 
 def _run_streaming_pipeline(task_id: str) -> Iterator[bytes]:
-    """Run the news-anchor pipeline and stream MP3 chunks as they're generated."""
+    """Run the news-anchor pipeline and stream Opus chunks as they're generated."""
 
     logger.info("[%s] Fetching articles …", task_id)
     articles = fetch_last_24_hours_articles()
@@ -109,7 +109,7 @@ def _run_streaming_pipeline(task_id: str) -> Iterator[bytes]:
 
 @app.post("/generate-anchor", dependencies=[Depends(verify_api_key)])  # type: ignore[arg-type]
 async def generate_anchor() -> StreamingResponse:  # noqa: D401
-    """Trigger generation and stream back the resulting MP3 file."""
+    """Trigger generation and stream back the resulting Opus file."""
 
     import asyncio
 
@@ -127,15 +127,15 @@ async def generate_anchor() -> StreamingResponse:  # noqa: D401
 
     buffer = BytesIO(audio_bytes)
 
-    response = StreamingResponse(buffer, media_type="audio/mpeg")
+    response = StreamingResponse(buffer, media_type="audio/opus")
     response.headers["X-Task-ID"] = task_id
-    response.headers["Content-Disposition"] = "inline; filename=news_anchor.mp3"
+    response.headers["Content-Disposition"] = "inline; filename=news_anchor.opus"
     return response
 
 
 @app.post("/generate-anchor-stream", dependencies=[Depends(verify_api_key)])  # type: ignore[arg-type]
 async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
-    """Trigger generation and stream back MP3 chunks as they're generated.
+    """Trigger generation and stream back Opus chunks as they're generated.
     
     This endpoint provides true streaming where audio chunks are sent to the client
     as soon as they're generated, allowing playback to start much sooner.
@@ -193,9 +193,9 @@ async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
 
     logger.info("[%s] Starting streaming generation", task_id)
 
-    response = StreamingResponse(stream_generator(), media_type="audio/mpeg")
+    response = StreamingResponse(stream_generator(), media_type="audio/opus")
     response.headers["X-Task-ID"] = task_id
-    response.headers["Content-Disposition"] = "inline; filename=news_anchor.mp3"
+    response.headers["Content-Disposition"] = "inline; filename=news_anchor.opus"
     # Disable buffering for true streaming
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"

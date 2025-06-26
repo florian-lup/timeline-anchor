@@ -31,7 +31,7 @@ class Settings:
 
     # Speech generation options
     voice: str = os.getenv("ANCHOR_VOICE", "alloy")
-    audio_format: str = os.getenv("AUDIO_FORMAT", "mp3")
+    audio_format: str = os.getenv("AUDIO_FORMAT", "opus")
 
     # General
     timezone: timezone = timezone.utc

@@ -10,8 +10,8 @@ from typing import Iterator
 from clients.openai import generate_speech, generate_speech_bytes, generate_speech_stream
 
 
-def generate_anchor_audio(script: str, output_file: str | Path = "news_anchor.mp3") -> Path:
-    """Generate an MP3 file containing TTS for the given script."""
+def generate_anchor_audio(script: str, output_file: str | Path = "news_anchor.opus") -> Path:
+    """Generate an Opus file containing TTS for the given script."""
     return generate_speech(script, output_path=output_file)
 
 
