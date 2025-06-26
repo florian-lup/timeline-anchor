@@ -95,62 +95,24 @@ async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
     as soon as they're generated, allowing playback to start much sooner.
     """
 
-    import asyncio
-    import queue
-    import threading
-
     task_id = uuid.uuid4().hex
-
-    async def stream_generator():
-        # Use a queue to communicate between the sync generator and async generator
-        chunk_queue = queue.Queue()
-        error_container = [None]
-        finished = [False]
-
-        def run_pipeline():
-            try:
-                for chunk in _run_streaming_pipeline(task_id):
-                    chunk_queue.put(chunk)
-            except Exception as exc:
-                error_container[0] = exc
-            finally:
-                finished[0] = True
-                chunk_queue.put(None)  # Sentinel to indicate completion
-
-        # Start the pipeline in a separate thread
-        thread = threading.Thread(target=run_pipeline)
-        thread.start()
-
-        try:
-            while True:
-                # Wait for chunks with a timeout to allow for async cancellation
-                try:
-                    chunk = await asyncio.get_event_loop().run_in_executor(
-                        None, lambda: chunk_queue.get(timeout=1)
-                    )
-                except queue.Empty:
-                    if finished[0]:
-                        break
-                    continue
-
-                if chunk is None:  # Sentinel value indicating completion
-                    break
-
-                yield chunk
-
-            if error_container[0]:
-                logger.exception("[%s] Streaming generation failed", task_id)
-                
-        finally:
-            # Ensure the thread is properly cleaned up
-            thread.join(timeout=5)
-
     logger.info("[%s] Starting streaming generation", task_id)
+
+    def stream_generator():
+        """Generator that yields audio chunks as they're produced."""
+        try:
+            for chunk in _run_streaming_pipeline(task_id):
+                yield chunk
+        except Exception as exc:
+            logger.exception("[%s] Streaming generation failed", task_id)
+            raise
 
     response = StreamingResponse(stream_generator(), media_type="audio/opus")
     response.headers["X-Task-ID"] = task_id
     response.headers["Content-Disposition"] = "inline; filename=news_anchor.opus"
-    # Disable buffering for true streaming
-    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Transfer-Encoding"] = "chunked"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     response.headers["Connection"] = "keep-alive"
     return response
