@@ -9,7 +9,7 @@ Run with:
 The endpoint `/generate-anchor` triggers the news anchor generation flow and
 returns the generated MP3. Clients must supply a valid API key in the
 `X-API-Key` header. Set the expected key via the `ANCHOR_API_KEY` environment
-variable (e.g. `fly secrets set ANCHOR_API_KEY=your_secret`).
+variable (e.g. ANCHOR_API_KEY=your_secret`).
 """
 
 import logging

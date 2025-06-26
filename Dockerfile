@@ -13,9 +13,9 @@ COPY . /app
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port for Fly.io
+# Expose port for Runway.com
 ENV PORT=8080
 EXPOSE $PORT
 
 # Default command
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8080"] 
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8080}"] 
