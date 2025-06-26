@@ -3,7 +3,6 @@ from __future__ import annotations
 """OpenAI client helpers for chat completions and TTS generation."""
 
 import logging
-from pathlib import Path
 from typing import List, Dict, Iterator
 
 from openai import OpenAI
@@ -41,69 +40,6 @@ def chat_completion(messages: List[Dict[str, str]]) -> str:
     return response.choices[0].message.content.strip()
 
 
-def generate_speech(
-    text: str,
-    output_path: str | Path = "news_anchor.mp3",
-    *,
-    voice: str | None = None,
-) -> Path:
-    """Generate TTS audio from ``text`` and save to ``output_path``.
-
-    Returns the ``Path`` to the generated file.
-    """
-
-    client = _get_client()
-
-    voice = voice or settings.voice
-
-    logger.info("Generating TTS audio using model %s", settings.tts_model)
-
-    response = client.audio.speech.create(
-        model=settings.tts_model,
-        voice=voice,
-        input=text,
-        response_format=settings.audio_format,
-    )
-
-    output_path = Path(output_path)
-    response.stream_to_file(str(output_path))
-
-    logger.info("Audio saved to %s", output_path)
-    return output_path
-
-
-def generate_speech_bytes(
-    text: str,
-    *,
-    voice: str | None = None,
-) -> bytes:
-    """Generate TTS audio from ``text`` and return as raw bytes.
-
-    This avoids touching the filesystem and is suitable for streaming directly
-    to clients.
-    """
-
-    client = _get_client()
-
-    voice = voice or settings.voice
-
-    logger.info("Generating TTS audio (bytes) using model %s", settings.tts_model)
-
-    response = client.audio.speech.create(
-        model=settings.tts_model,
-        voice=voice,
-        input=text,
-        response_format=settings.audio_format,
-    )
-
-    # The response object supports ``iter_bytes`` for streaming.
-    audio_chunks = []
-    for chunk in response.iter_bytes():  # type: ignore[attr-defined]
-        audio_chunks.append(chunk)
-
-    return b"".join(audio_chunks)
-
-
 def generate_speech_stream(
     text: str,
     *,
@@ -122,15 +58,14 @@ def generate_speech_stream(
 
     logger.info("Starting streaming TTS audio generation using model %s", settings.tts_model)
 
-    response = client.audio.speech.create(
+    with client.audio.speech.with_streaming_response.create(
         model=settings.tts_model,
         voice=voice,
         input=text,
         response_format=settings.audio_format,
-    )
-
-    # Yield chunks as they arrive from OpenAI
-    for chunk in response.iter_bytes():  # type: ignore[attr-defined]
-        yield chunk
+    ) as response:
+        # Yield chunks as they arrive from OpenAI
+        for chunk in response.iter_bytes():
+            yield chunk
 
     logger.info("Completed streaming TTS audio generation")

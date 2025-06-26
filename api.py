@@ -6,8 +6,8 @@ Run with:
 
     uvicorn api:app --host 0.0.0.0 --port 8080
 
-The endpoint `/generate-anchor` triggers the news anchor generation flow and
-returns the generated MP3. Clients must supply a valid API key in the
+The endpoint `/generate-anchor-stream` triggers the news anchor generation flow and
+streams the generated Opus audio. Clients must supply a valid API key in the
 `X-API-Key` header. Set the expected key via the `ANCHOR_API_KEY` environment
 variable (e.g. ANCHOR_API_KEY=your_secret`).
 """
@@ -15,7 +15,6 @@ variable (e.g. ANCHOR_API_KEY=your_secret`).
 import logging
 import os
 import uuid
-from io import BytesIO
 from typing import Iterator
 
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -24,7 +23,7 @@ from fastapi.responses import StreamingResponse
 
 from services.get_news import fetch_last_24_hours_articles
 from services.write_script import create_anchor_script
-from services.generate_speech import generate_anchor_audio_bytes, generate_anchor_audio_stream
+from services.generate_speech import generate_anchor_audio_stream
 
 logger = logging.getLogger(__name__)
 
@@ -64,24 +63,6 @@ app.add_middleware(
 # Helper that encapsulates the three-step pipeline
 # ---------------------------------------------------------------------------
 
-def _run_pipeline(task_id: str) -> bytes:
-    """Run the news-anchor pipeline and return Opus bytes."""
-
-    logger.info("[%s] Fetching articles …", task_id)
-    articles = fetch_last_24_hours_articles()
-
-    if not articles:
-        raise RuntimeError("No articles found in the last 24 hours.")
-
-    logger.info("[%s] Creating script …", task_id)
-    script = create_anchor_script(articles)
-
-    logger.info("[%s] Generating speech …", task_id)
-    audio_bytes = generate_anchor_audio_bytes(script)
-
-    return audio_bytes
-
-
 def _run_streaming_pipeline(task_id: str) -> Iterator[bytes]:
     """Run the news-anchor pipeline and stream Opus chunks as they're generated."""
 
@@ -105,33 +86,6 @@ def _run_streaming_pipeline(task_id: str) -> Iterator[bytes]:
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
-
-
-@app.post("/generate-anchor", dependencies=[Depends(verify_api_key)])  # type: ignore[arg-type]
-async def generate_anchor() -> StreamingResponse:  # noqa: D401
-    """Trigger generation and stream back the resulting Opus file."""
-
-    import asyncio
-
-    task_id = uuid.uuid4().hex
-
-    loop = asyncio.get_running_loop()
-
-    try:
-        audio_bytes = await loop.run_in_executor(None, _run_pipeline, task_id)
-    except Exception as exc:  # pragma: no cover
-        logger.exception("[%s] Generation failed", task_id)
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-    logger.info("[%s] Completed successfully", task_id)
-
-    buffer = BytesIO(audio_bytes)
-
-    response = StreamingResponse(buffer, media_type="audio/opus")
-    response.headers["X-Task-ID"] = task_id
-    response.headers["Content-Disposition"] = "inline; filename=news_anchor.opus"
-    return response
-
 
 @app.post("/generate-anchor-stream", dependencies=[Depends(verify_api_key)])  # type: ignore[arg-type]
 async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
