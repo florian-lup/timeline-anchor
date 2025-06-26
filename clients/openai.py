@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Iterator
 
 from openai import OpenAI
 
@@ -102,3 +102,35 @@ def generate_speech_bytes(
         audio_chunks.append(chunk)
 
     return b"".join(audio_chunks)
+
+
+def generate_speech_stream(
+    text: str,
+    *,
+    voice: str | None = None,
+) -> Iterator[bytes]:
+    """Generate TTS audio from ``text`` and yield chunks as they arrive.
+    
+    This enables true streaming where audio chunks are yielded immediately
+    as they're received from OpenAI, allowing clients to start playing
+    audio before the entire generation is complete.
+    """
+
+    client = _get_client()
+
+    voice = voice or settings.voice
+
+    logger.info("Starting streaming TTS audio generation using model %s", settings.tts_model)
+
+    response = client.audio.speech.create(
+        model=settings.tts_model,
+        voice=voice,
+        input=text,
+        response_format=settings.audio_format,
+    )
+
+    # Yield chunks as they arrive from OpenAI
+    for chunk in response.iter_bytes():  # type: ignore[attr-defined]
+        yield chunk
+
+    logger.info("Completed streaming TTS audio generation")

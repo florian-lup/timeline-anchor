@@ -61,7 +61,7 @@ A lightweight `FastAPI` wrapper exposes the entire pipeline as a single HTTP end
    ```ts
    const res = await fetch("https://timeline-anchor/generate-anchor", {
      method: "POST",
-     headers: { "X-API-Key": process.env.NEXT_PUBLIC_ANCHOR_API_KEY! },
+     headers: { "X-API-Key": process.env.ANCHOR_API_KEY! },
    });
    const blob = await res.blob();
    const url = URL.createObjectURL(blob);
