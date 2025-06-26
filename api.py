@@ -107,9 +107,9 @@ async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
             logger.exception("[%s] Streaming generation failed", task_id)
             raise
 
-    response = StreamingResponse(stream_generator(), media_type="audio/opus")
+    response = StreamingResponse(stream_generator(), media_type="audio/wav")
     response.headers["X-Task-ID"] = task_id
-    response.headers["Content-Disposition"] = "inline; filename=news_anchor.opus"
+    response.headers["Content-Disposition"] = "inline; filename=news_anchor.wav"
     response.headers["Transfer-Encoding"] = "chunked"
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
