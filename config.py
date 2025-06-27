@@ -24,7 +24,7 @@ class Settings:
 
     # OpenAI
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
-    chat_model: str = os.getenv("CHAT_MODEL", "gpt-4.1-mini-2025-04-14")
+    chat_model: str = os.getenv("CHAT_MODEL", "gpt-4o-mini-2024-07-18")
     chat_max_tokens: int = int(os.getenv("CHAT_MAX_TOKENS", 500))
     chat_temperature: float = float(os.getenv("CHAT_TEMPERATURE", 0.5))
     tts_model: str = os.getenv("TTS_MODEL", "gpt-4o-mini-tts")

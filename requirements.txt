@@ -3,3 +3,6 @@ openai
 pymongo
 fastapi
 uvicorn[standard]
+pytest
+pytest-asyncio
+httpx

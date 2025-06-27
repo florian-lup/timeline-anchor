@@ -35,7 +35,6 @@ def chat_completion(messages: List[Dict[str, str]]) -> str:
         model=settings.chat_model,
         messages=messages,
         max_tokens=settings.chat_max_tokens,
-        temperature=settings.chat_temperature,
     )
     return response.choices[0].message.content.strip()
 
@@ -65,8 +64,10 @@ def generate_speech_stream(
         response_format=settings.audio_format,
     ) as response:
         # Yield chunks as they arrive from OpenAI
-        # Use 4096 bytes as chunk size for optimal streaming performance
-        for chunk in response.iter_bytes(chunk_size=4096):
+        # Use 2048-byte chunks to reduce time to first audio byte; OpenAI streams
+        # quickly enough that the smaller chunk size does not significantly
+        # increase overhead but can shave ~50 ms from perceived latency.
+        for chunk in response.iter_bytes(chunk_size=2048):
             yield chunk
 
     logger.info("Completed streaming TTS audio generation")

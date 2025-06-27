@@ -20,6 +20,7 @@ from typing import Iterator
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import iterate_in_threadpool
 
 from services.get_news import fetch_last_24_hours_articles
 from services.write_script import create_anchor_script
@@ -107,7 +108,8 @@ async def generate_anchor_stream() -> StreamingResponse:  # noqa: D401
             logger.exception("[%s] Streaming generation failed", task_id)
             raise
 
-    response = StreamingResponse(stream_generator(), media_type="audio/wav")
+    # Run the (blocking) stream generator in a thread so the event loop stays responsive
+    response = StreamingResponse(iterate_in_threadpool(stream_generator()), media_type="audio/wav")
     response.headers["X-Task-ID"] = task_id
     response.headers["Content-Disposition"] = "inline; filename=news_anchor.wav"
     response.headers["Transfer-Encoding"] = "chunked"
