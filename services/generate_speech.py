@@ -1,4 +1,3 @@
-"from the script generate TTS"
 
 from __future__ import annotations
 

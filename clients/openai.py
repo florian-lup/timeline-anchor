@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-"""OpenAI client helpers for chat completions and TTS generation."""
+"""OpenAI client helper for streaming text-to-speech generation."""
 
 import logging
-from typing import List, Dict, Iterator
+from typing import Iterator
 
 from openai import OpenAI
 
 from config import settings
+from utils.voice import random_voice
 
 logger = logging.getLogger(__name__)
 
@@ -26,19 +27,6 @@ def _get_client() -> OpenAI:
     return _client
 
 
-def chat_completion(messages: List[Dict[str, str]]) -> str:
-    """Return the assistant's response text using the configured chat model."""
-
-    client = _get_client()
-
-    response = client.chat.completions.create(
-        model=settings.chat_model,
-        messages=messages,
-        max_tokens=settings.chat_max_tokens,
-    )
-    return response.choices[0].message.content.strip()
-
-
 def generate_speech_stream(
     text: str,
     *,
@@ -53,7 +41,7 @@ def generate_speech_stream(
 
     client = _get_client()
 
-    voice = voice or settings.voice
+    voice = voice or random_voice()
 
     logger.info("Starting streaming TTS audio generation using model %s", settings.tts_model)
 

@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Import your app and services
 from api import app
-from services.get_news import fetch_last_24_hours_articles
-from services.write_script import create_anchor_script
+from services.get_news import fetch_latest_script
 from services.generate_speech import generate_anchor_audio_stream
 
 
@@ -91,39 +90,21 @@ def test_service_latencies_unit_tests(latency_tracker):
     """Test individual service latencies using unit tests."""
     
     # Mock data for testing
-    mock_articles = [
-        {"title": "Test Article 1", "summary": "Summary 1"},
-        {"title": "Test Article 2", "summary": "Summary 2"},
-        {"title": "Test Article 3", "summary": "Summary 3"}
-    ]
-    
     mock_script = "Good evening. Here are today's top stories. This is a test script for latency testing."
     
-    # Test 1: Article fetching latency
-    with patch('clients.mongodb.get_articles_last_24_hours') as mock_get_articles:
-        mock_get_articles.return_value = mock_articles
-        
-        latency_tracker.start_timing("fetch_articles")
-        articles = fetch_last_24_hours_articles()
-        fetch_time = latency_tracker.end_timing("fetch_articles")
-        
-        assert articles == mock_articles
-        assert fetch_time >= 0
-        logger.info(f"Article fetching took: {fetch_time:.3f}s")
-    
-    # Test 2: Script generation latency
-    with patch('clients.openai.chat_completion') as mock_chat:
-        mock_chat.return_value = mock_script
-        
-        latency_tracker.start_timing("generate_script")
-        script = create_anchor_script(mock_articles)
-        script_time = latency_tracker.end_timing("generate_script")
-        
+    # Test 1: Script fetching latency
+    with patch('clients.mongodb.get_latest_script') as mock_get_script:
+        mock_get_script.return_value = mock_script
+
+        latency_tracker.start_timing("fetch_script")
+        script = fetch_latest_script()
+        fetch_time = latency_tracker.end_timing("fetch_script")
+
         assert script == mock_script
-        assert script_time >= 0
-        logger.info(f"Script generation took: {script_time:.3f}s")
+        assert fetch_time >= 0
+        logger.info(f"Script fetching took: {fetch_time:.3f}s")
     
-    # Test 3: Audio streaming latency (time to first chunk)
+    # Test 2: Audio streaming latency (time to first chunk)
     mock_audio_chunks = [b"audio_chunk_1", b"audio_chunk_2", b"audio_chunk_3"]
     
     with patch('clients.openai.generate_speech_stream') as mock_speech:
@@ -151,21 +132,13 @@ def test_api_endpoint_latency(client, api_key, latency_tracker):
     """Test the API endpoint latency with mocked services."""
     
     # Mock all external dependencies
-    mock_articles = [
-        {"title": "Breaking News", "summary": "Important story"},
-        {"title": "Tech Update", "summary": "Latest technology news"},
-        {"title": "Weather Alert", "summary": "Storm approaching"}
-    ]
-    
     mock_script = "Welcome to the news. Here are today's top stories from our timeline anchor."
     mock_audio_chunks = [f"chunk_{i}".encode() for i in range(5)]
     
-    with patch('services.get_news.fetch_last_24_hours_articles') as mock_fetch, \
-         patch('services.write_script.create_anchor_script') as mock_script_gen, \
+    with patch('services.get_news.fetch_latest_script') as mock_fetch, \
          patch('services.generate_speech.generate_anchor_audio_stream') as mock_audio:
         
-        mock_fetch.return_value = mock_articles
-        mock_script_gen.return_value = mock_script
+        mock_fetch.return_value = mock_script
         mock_audio.return_value = iter(mock_audio_chunks)
         
         headers = {"X-API-Key": api_key}
@@ -226,12 +199,10 @@ async def test_concurrent_api_requests(api_key, latency_tracker):
             return None
     
     # Mock the services for concurrent testing
-    mock_articles = [{"title": "Concurrent Test", "summary": "Testing concurrent requests"}]
     mock_script = "Concurrent testing script."
     mock_audio = [b"concurrent_audio_chunk"]
     
-    with patch('services.get_news.fetch_last_24_hours_articles', return_value=mock_articles), \
-         patch('services.write_script.create_anchor_script', return_value=mock_script), \
+    with patch('services.get_news.fetch_latest_script', return_value=mock_script), \
          patch('services.generate_speech.generate_anchor_audio_stream', return_value=iter(mock_audio)):
         
         # Start the app for async testing
@@ -267,8 +238,7 @@ def test_latency_thresholds():
     
     # Define acceptable latency thresholds (adjust based on your requirements)
     THRESHOLDS = {
-        "fetch_articles": 2.0,      # 2 seconds for database query
-        "generate_script": 10.0,    # 10 seconds for AI script generation
+        "fetch_script": 2.0,      # 2 seconds for database query
         "first_audio_chunk": 5.0,   # 5 seconds to start audio streaming
         "full_api_request": 15.0,   # 15 seconds total for end-to-end
     }
@@ -278,8 +248,7 @@ def test_latency_thresholds():
     # This would typically use real performance data
     # For demo purposes, using mock timing data
     mock_timings = {
-        "fetch_articles": 0.8,
-        "generate_script": 4.2,
+        "fetch_script": 0.8,
         "first_audio_chunk": 2.1,
         "full_api_request": 7.1
     }

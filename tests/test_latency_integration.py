@@ -25,8 +25,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import services directly for individual testing
-from services.get_news import fetch_last_24_hours_articles
-from services.write_script import create_anchor_script
+from services.get_news import fetch_latest_script
 from services.generate_speech import generate_anchor_audio_stream
 
 # Configure logging (avoid emojis for Windows compatibility)
@@ -207,27 +206,19 @@ class APILatencyTester:
         service_timings = {}
         
         try:
-            # Test 1: Article fetching from MongoDB
-            logger.info("Step 1: Fetching articles from database...")
+            # Test 1: Script fetching from MongoDB
+            logger.info("Step 1: Fetching latest script from database...")
             start_time = time.time()
-            articles = fetch_last_24_hours_articles()
+            script = fetch_latest_script()
             fetch_time = time.time() - start_time
-            service_timings["fetch_articles"] = fetch_time
-            logger.info(f"Articles fetched: {len(articles)} articles in {fetch_time:.3f}s")
+            service_timings["fetch_script"] = fetch_time
+            logger.info(f"Script fetched in {fetch_time:.3f}s")
             
-            if not articles:
-                return {"error": "No articles found", "timings": service_timings}
+            if not script:
+                return {"error": "No script found", "timings": service_timings}
             
-            # Test 2: Script generation with OpenAI
-            logger.info("Step 2: Generating script with OpenAI...")
-            start_time = time.time()
-            script = create_anchor_script(articles)
-            script_time = time.time() - start_time
-            service_timings["generate_script"] = script_time
-            logger.info(f"Script generated: {len(script)} characters in {script_time:.3f}s")
-            
-            # Test 3: Time to first audio chunk (streaming start)
-            logger.info("Step 3: Measuring time until audio streaming begins...")
+            # Test 2: Time to first audio chunk (streaming start)
+            logger.info("Step 2: Measuring time until audio streaming begins...")
             start_time = time.time()
             audio_stream = generate_anchor_audio_stream(script)
             
@@ -238,13 +229,12 @@ class APILatencyTester:
             logger.info(f"Audio streaming started: {len(first_chunk)} bytes in {first_chunk_time:.3f}s (stopping here)")
             
             # Calculate total time
-            total_time = service_timings["fetch_articles"] + service_timings["generate_script"] + service_timings["first_audio_chunk"]
+            total_time = service_timings["fetch_script"] + service_timings["first_audio_chunk"]
             service_timings["total_sequential"] = total_time
             
             return {
                 "success": True,
                 "timings": service_timings,
-                "articles_count": len(articles),
                 "script_length": len(script),
                 "first_chunk_size": len(first_chunk)
             }
@@ -302,14 +292,12 @@ class APILatencyTester:
             timings = results["timings"]
             
             print(f"Status: SUCCESS")
-            print(f"Articles Count: {results['articles_count']}")
             print(f"Script Length: {results['script_length']} characters")
             print(f"First Chunk Size: {results['first_chunk_size']} bytes")
             print()
             print("Individual Service Timings:")
-            print(f"1. Database Query (Articles):  {timings['fetch_articles']:.3f}s")
-            print(f"2. OpenAI Script Generation:   {timings['generate_script']:.3f}s")
-            print(f"3. Audio Streaming Start:      {timings['first_audio_chunk']:.3f}s")
+            print(f"1. Database Query (Script):  {timings['fetch_script']:.3f}s")
+            print(f"2. Audio Streaming Start:      {timings['first_audio_chunk']:.3f}s")
             print(f"   Total Sequential Time:      {timings['total_sequential']:.3f}s")
             
             # Find the bottleneck

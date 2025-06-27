@@ -2,12 +2,7 @@ from __future__ import annotations
 
 """MongoDB client helpers."""
 
-import contextlib
-from datetime import datetime, timedelta
-from typing import Iterator, List, Dict
-
 from pymongo import MongoClient
-from bson.objectid import ObjectId
 
 from config import settings
 
@@ -30,27 +25,24 @@ def _get_client() -> MongoClient:
 # Public helpers
 # ---------------------------------------------------------------------------
 
-def get_articles_last_24_hours() -> List[Dict[str, str]]:
-    """Return articles from the last 24 hours using the ObjectId timestamp.
+def get_latest_script() -> str:
+    """Return the most recently inserted script from the ``scripts`` collection.
 
-    MongoDB's default ObjectId contains the document's creation time in its
-    first 4 bytes. By generating start/end ObjectIds for the last 24 hours, we
-    can retrieve all documents inserted in that timeframe without relying on a
-    separate ``date`` field. This keeps the query simple and index-friendly.
+    The collection is sorted by the default ``_id`` ObjectId which contains
+    a creation timestamp. Sorting by ``_id`` descending and limiting to one
+    document gives us the latest entry without requiring an additional
+    timestamp index.
+
+    The document is expected to have an ``anchor`` field containing the
+    text that should be narrated by the news anchor.
     """
 
-    now = datetime.now(tz=settings.timezone)
-    start_time = now - timedelta(hours=24)
-    end_time = now
-
     client = _get_client()
-    collection = client[settings.mongodb_db][settings.mongodb_collection]
+    collection = client[settings.mongodb_db]["scripts"]
 
-    start_oid = ObjectId.from_datetime(start_time)
-    end_oid = ObjectId.from_datetime(end_time)
+    doc = collection.find_one({}, {"_id": 0, "anchor": 1}, sort=[("_id", -1)])
 
-    cursor = collection.find(
-        {"_id": {"$gte": start_oid, "$lt": end_oid}},
-        {"_id": 0, "title": 1, "summary": 1},
-    )
-    return list(cursor)
+    if not doc or "anchor" not in doc:
+        raise RuntimeError("No scripts found in the 'scripts' collection or missing 'anchor' field.")
+
+    return doc["anchor"]

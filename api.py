@@ -22,8 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import iterate_in_threadpool
 
-from services.get_news import fetch_last_24_hours_articles
-from services.write_script import create_anchor_script
+from services.get_news import fetch_latest_script
 from services.generate_speech import generate_anchor_audio_stream
 
 logger = logging.getLogger(__name__)
@@ -67,14 +66,8 @@ app.add_middleware(
 def _run_streaming_pipeline(task_id: str) -> Iterator[bytes]:
     """Run the news-anchor pipeline and stream Opus chunks as they're generated."""
 
-    logger.info("[%s] Fetching articles …", task_id)
-    articles = fetch_last_24_hours_articles()
-
-    if not articles:
-        raise RuntimeError("No articles found in the last 24 hours.")
-
-    logger.info("[%s] Creating script …", task_id)
-    script = create_anchor_script(articles)
+    logger.info("[%s] Fetching latest script …", task_id)
+    script = fetch_latest_script()
 
     logger.info("[%s] Starting streaming speech generation …", task_id)
     # Stream audio chunks as they're generated

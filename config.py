@@ -7,7 +7,7 @@ no secrets are hard-coded into the repository.
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timezone
 from dotenv import load_dotenv
 
@@ -24,13 +24,12 @@ class Settings:
 
     # OpenAI
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
-    chat_model: str = os.getenv("CHAT_MODEL", "gpt-4o-mini-2024-07-18")
-    chat_max_tokens: int = int(os.getenv("CHAT_MAX_TOKENS", 500))
-    chat_temperature: float = float(os.getenv("CHAT_TEMPERATURE", 0.5))
+
+    # Text-to-speech
     tts_model: str = os.getenv("TTS_MODEL", "gpt-4o-mini-tts")
 
     # Speech generation options
-    voice: str = os.getenv("ANCHOR_VOICE", "alloy")
+    voice_options: list[str] = field(default_factory=lambda: ["alloy", "onyx", "echo", "fable", "nova", "shimmer"])
     audio_format: str = os.getenv("AUDIO_FORMAT", "wav")
 
     # General
