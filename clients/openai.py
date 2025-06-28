@@ -52,10 +52,10 @@ def generate_speech_stream(
         response_format=settings.audio_format,
     ) as response:
         # Yield chunks as they arrive from OpenAI
-        # Use 2048-byte chunks to reduce time to first audio byte; OpenAI streams
+        # Use 4096-byte chunks to reduce time to first audio byte; OpenAI streams
         # quickly enough that the smaller chunk size does not significantly
         # increase overhead but can shave ~50 ms from perceived latency.
-        for chunk in response.iter_bytes(chunk_size=2048):
+        for chunk in response.iter_bytes(chunk_size=4096):
             yield chunk
 
     logger.info("Completed streaming TTS audio generation")
