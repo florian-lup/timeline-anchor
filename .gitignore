@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 venv/
+.venv/
 ENV/
 env/
 .env
@@ -47,7 +48,3 @@ site/
 # OS specific
 .DS_Store
 Thumbs.db 
-
-notes.md
-
-artefacts/

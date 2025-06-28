@@ -29,7 +29,7 @@ class Settings:
     tts_model: str = os.getenv("TTS_MODEL", "gpt-4o-mini-tts")
 
     # Speech generation options
-    voice_options: list[str] = field(default_factory=lambda: ["alloy", "onyx", "echo", "fable", "nova", "shimmer"])
+    voice_options: list[str] = field(default_factory=lambda: ["ash", "ballad", "coral", "sage", "verse"])
     audio_format: str = os.getenv("AUDIO_FORMAT", "wav")
 
     # General
